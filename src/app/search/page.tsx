@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,6 +8,7 @@ import SearchHeader from '@/components/search/SearchHeader';
 import NoResults from '@/components/search/NoResults';
 import FilterBar from '@/components/FilterBar';
 import ProductCard from '@/components/ProductCard';
+import type { FilterState } from '@/types/shop';
 
 // Mock search results
 const MOCK_PRODUCTS = [
@@ -42,9 +44,17 @@ const MOCK_PRODUCTS = [
     },
 ];
 
-export default function SearchPage() {
+function SearchContent() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
+
+    const [filters, setFilters] = useState<FilterState>({
+        categories: [],
+        priceRange: [0, 500],
+        brands: [],
+        minRating: null,
+        finish: []
+    });
 
     // Simulate search - in real app, this would filter based on query
     const results = query.toLowerCase().includes('lipstick') || query.toLowerCase().includes('lip')
@@ -63,7 +73,7 @@ export default function SearchPage() {
                     <>
                         {/* Filters & Sort */}
                         <div className="mb-8">
-                            <FilterBar />
+                            <FilterBar filters={filters} setFilters={setFilters} />
                         </div>
 
                         {/* Product Grid */}
@@ -80,5 +90,13 @@ export default function SearchPage() {
 
             <Footer />
         </main>
+    );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SearchContent />
+        </Suspense>
     );
 }
